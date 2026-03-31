@@ -1,0 +1,8 @@
+---
+postgres_version:        13
+postgres_port:           5432
+postgres_listen_address: "0.0.0.0"
+postgres_db_name:        appdb
+postgres_db_user:        appuser
+postgres_db_password:    changeme
+postgres_data_dir:       /var/lib/pgsql/data

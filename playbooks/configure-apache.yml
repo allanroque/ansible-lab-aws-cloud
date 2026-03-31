@@ -1,0 +1,31 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Playbook  : configure-apache.yml
+# Purpose   : Install and configure Apache httpd with test content
+# Targets   : hosts in group 'webserver' (tag Role: webserver)
+#
+# AAP Survey variables:
+#   apache_port — listening port (default: 80)
+# ─────────────────────────────────────────────────────────────────────────────
+- name: Configure Apache
+  hosts: webserver
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - ../group_vars/all/vars.yml
+
+  roles:
+    - role: apache
+      tags: [apache, webserver]
+
+  post_tasks:
+    - name: Export Apache info to workflow (set_stats)
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          stats_apache_hosts:   "{{ ansible_play_hosts }}"
+          stats_apache_port:    "{{ apache_port }}"
+          stats_apache_url:     "http://{{ ansible_default_ipv4.address }}:{{ apache_port }}"
+          stats_service_status: "running"
+          stats_phase:          "apache_ready"

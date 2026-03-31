@@ -1,0 +1,37 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Playbook  : configure-app.yml
+# Purpose   : Deploy and configure generic application as systemd service
+# Targets   : hosts in group 'webserver' (tag Role: webserver)
+#
+# AAP Survey variables:
+#   app_name        — service name and identifier  (default: myapp)
+#   app_repo_url    — Git repository URL           (required)
+#   app_repo_branch — branch to deploy             (default: main)
+#   app_port        — application port             (default: 8080)
+#   app_env         — environment label            (default: production)
+# ─────────────────────────────────────────────────────────────────────────────
+- name: Configure application
+  hosts: webserver
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - ../group_vars/all/vars.yml
+
+  roles:
+    - role: app
+      tags: [app, deploy]
+
+  post_tasks:
+    - name: Export application info to workflow (set_stats)
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          stats_app_name:       "{{ app_name }}"
+          stats_app_hosts:      "{{ ansible_play_hosts }}"
+          stats_app_port:       "{{ app_port }}"
+          stats_app_url:        "http://{{ ansible_default_ipv4.address }}:{{ app_port }}"
+          stats_app_branch:     "{{ app_repo_branch }}"
+          stats_service_status: "running"
+          stats_phase:          "app_ready"

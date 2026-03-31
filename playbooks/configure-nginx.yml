@@ -1,0 +1,31 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Playbook  : configure-nginx.yml
+# Purpose   : Install and configure Nginx with test content
+# Targets   : hosts in group 'webserver' (tag Role: webserver)
+#
+# AAP Survey variables:
+#   nginx_port — listening port (default: 80)
+# ─────────────────────────────────────────────────────────────────────────────
+- name: Configure Nginx
+  hosts: webserver
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - ../group_vars/all/vars.yml
+
+  roles:
+    - role: nginx
+      tags: [nginx, webserver]
+
+  post_tasks:
+    - name: Export Nginx info to workflow (set_stats)
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          stats_nginx_hosts:    "{{ ansible_play_hosts }}"
+          stats_nginx_port:     "{{ nginx_port }}"
+          stats_nginx_url:      "http://{{ ansible_default_ipv4.address }}:{{ nginx_port }}"
+          stats_service_status: "running"
+          stats_phase:          "nginx_ready"

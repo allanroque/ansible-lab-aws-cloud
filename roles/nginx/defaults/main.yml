@@ -1,0 +1,3 @@
+---
+nginx_port:      80
+nginx_doc_root:  /usr/share/nginx/html

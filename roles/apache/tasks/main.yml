@@ -1,0 +1,61 @@
+---
+# ─── 1. Install ───────────────────────────────────────────────────────────────
+
+- name: Install Apache httpd
+  ansible.builtin.dnf:
+    name:
+      - httpd
+      - mod_ssl
+    state: present
+
+# ─── 2. Configure ─────────────────────────────────────────────────────────────
+
+- name: Configure Apache port
+  ansible.builtin.lineinfile:
+    path:   /etc/httpd/conf/httpd.conf
+    regexp: "^Listen "
+    line:   "Listen {{ apache_port }}"
+  notify: restart httpd
+
+- name: Set ServerName
+  ansible.builtin.lineinfile:
+    path:   /etc/httpd/conf/httpd.conf
+    regexp: "^#?ServerName "
+    line:   "ServerName {{ ansible_fqdn }}:{{ apache_port }}"
+  notify: restart httpd
+
+# ─── 3. Test content ──────────────────────────────────────────────────────────
+
+- name: Deploy test index page
+  ansible.builtin.template:
+    src:   index.html.j2
+    dest:  "{{ apache_doc_root }}/index.html"
+    owner: root
+    group: root
+    mode:  "0644"
+
+# ─── 4. SELinux ───────────────────────────────────────────────────────────────
+
+- name: Allow Apache to listen on custom port (SELinux)
+  community.general.seport:
+    ports:    "{{ apache_port }}"
+    proto:    tcp
+    setype:   http_port_t
+    state:    present
+  when: apache_port != 80
+
+# ─── 5. Service ───────────────────────────────────────────────────────────────
+
+- name: Ensure httpd is started and enabled
+  ansible.builtin.service:
+    name:    httpd
+    state:   started
+    enabled: true
+
+- name: Show Apache summary
+  ansible.builtin.debug:
+    msg:
+      - "Apache installed and configured"
+      - "Host : {{ ansible_hostname }}"
+      - "Port : {{ apache_port }}"
+      - "URL  : http://{{ ansible_default_ipv4.address }}:{{ apache_port }}"

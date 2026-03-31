@@ -1,0 +1,54 @@
+---
+# ─── 1. Install ───────────────────────────────────────────────────────────────
+
+- name: Install Nginx
+  ansible.builtin.dnf:
+    name:  nginx
+    state: present
+
+# ─── 2. Configure ─────────────────────────────────────────────────────────────
+
+- name: Configure Nginx port
+  ansible.builtin.template:
+    src:   nginx.conf.j2
+    dest:  /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode:  "0644"
+  notify: restart nginx
+
+# ─── 3. Test content ──────────────────────────────────────────────────────────
+
+- name: Deploy test index page
+  ansible.builtin.template:
+    src:   index.html.j2
+    dest:  "{{ nginx_doc_root }}/index.html"
+    owner: root
+    group: root
+    mode:  "0644"
+
+# ─── 4. SELinux ───────────────────────────────────────────────────────────────
+
+- name: Allow Nginx to listen on custom port (SELinux)
+  community.general.seport:
+    ports:  "{{ nginx_port }}"
+    proto:  tcp
+    setype: http_port_t
+    state:  present
+  when: nginx_port != 80
+
+# ─── 5. Service ───────────────────────────────────────────────────────────────
+
+- name: Ensure Nginx is started and enabled
+  ansible.builtin.service:
+    name:    nginx
+    state:   started
+    enabled: true
+
+- name: Show Nginx summary
+  ansible.builtin.debug:
+    msg:
+      - "Nginx installed and configured"
+      - "Host : {{ ansible_hostname }}"
+      - "Port : {{ nginx_port }}"
+      - "URL  : http://{{ ansible_default_ipv4.address }}:{{ nginx_port }}"

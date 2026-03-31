@@ -1,0 +1,4 @@
+---
+apache_port:         80
+apache_doc_root:     /var/www/html
+apache_server_admin: admin@localhost

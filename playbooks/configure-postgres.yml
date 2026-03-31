@@ -1,0 +1,36 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Playbook  : configure-postgres.yml
+# Purpose   : Install and configure PostgreSQL
+# Targets   : hosts in group 'database' (tag Role: database)
+#
+# AAP Survey variables:
+#   postgres_db_name     — database name      (default: appdb)
+#   postgres_db_user     — database user      (default: appuser)
+#   postgres_db_password — database password  (sensitive field)
+#   postgres_port        — port               (default: 5432)
+#   postgres_version     — major version      (default: 13)
+# ─────────────────────────────────────────────────────────────────────────────
+- name: Configure PostgreSQL
+  hosts: database
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - ../group_vars/all/vars.yml
+
+  roles:
+    - role: postgres
+      tags: [postgres, database]
+
+  post_tasks:
+    - name: Export PostgreSQL info to workflow (set_stats)
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          stats_postgres_host:    "{{ ansible_default_ipv4.address }}"
+          stats_postgres_port:    "{{ postgres_port }}"
+          stats_postgres_db:      "{{ postgres_db_name }}"
+          stats_postgres_user:    "{{ postgres_db_user }}"
+          stats_service_status:   "running"
+          stats_phase:            "postgres_ready"
