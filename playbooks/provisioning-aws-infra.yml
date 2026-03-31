@@ -1,0 +1,68 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Playbook  : provisioning-aws-infra.yml
+# Purpose   : Provision infra foundation — VPC, networking, security group, SSH key
+# Phase     : 1 — Infrastructure foundation
+#
+# Covers:
+#   - VPC + public subnet + Internet Gateway + route table
+#   - Security group (SSH, HTTP, HTTPS, 8080, databases)
+#   - SSH key pair import (public key)
+#
+# Run       : ansible-playbook playbooks/provisioning-aws-infra.yml
+# ─────────────────────────────────────────────────────────────────────────────
+- name: Provision AWS infrastructure foundation
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - ../group_vars/all/vars.yml
+    - ../group_vars/all/aws_credentials.yml
+
+  roles:
+    - role: vpc
+      tags: [vpc, network]
+
+    - role: security_group
+      tags: [security_group, network]
+
+  post_tasks:
+    - name: Import SSH public key into AWS
+      amazon.aws.ec2_key:
+        name:         "{{ ec2_key_name }}"
+        region:       "{{ aws_region }}"
+        access_key:   "{{ aws_access_key }}"
+        secret_key:   "{{ aws_secret_key }}"
+        key_material: "{{ ec2_ssh_public_key }}"
+        state: present
+        tags: "{{ common_tags | combine({'Name': ec2_key_name}) }}"
+      tags: [key, network]
+
+    - name: Infrastructure foundation summary
+      ansible.builtin.debug:
+        msg:
+          - "================================================"
+          - " ansible-aws-lab — Infrastructure Summary"
+          - "================================================"
+          - "Region       : {{ aws_region }}"
+          - "VPC          : {{ vpc_id }}"
+          - "Subnet       : {{ public_subnet_id }}"
+          - "IGW          : {{ igw_id }}"
+          - "Security GRP : {{ sg_id }}"
+          - "Key Pair     : {{ ec2_key_name }}"
+          - "================================================"
+          - "Next step: run provisioning-aws-ec2.yml to launch instances"
+
+    - name: Export infra foundation IDs to workflow (set_stats)
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          stats_vpc_id:           "{{ vpc_id }}"
+          stats_public_subnet_id: "{{ public_subnet_id }}"
+          stats_igw_id:           "{{ igw_id }}"
+          stats_sg_id:            "{{ sg_id }}"
+          stats_ec2_key_name:     "{{ ec2_key_name }}"
+          stats_aws_region:       "{{ aws_region }}"
+          stats_project_name:     "{{ project_name }}"
+          stats_phase:            "infra_ready"

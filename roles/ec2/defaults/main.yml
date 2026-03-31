@@ -1,0 +1,15 @@
+---
+# ── Overridable via AAP survey / extra_vars ───────────────────────────────────
+ec2_server_name:   server
+ec2_instance_size: t2.micro       # t2.micro | t2.small | t2.medium
+ec2_server_role:   webserver
+ec2_server_group:  lab
+ec2_quantity:      1
+
+# ── Key pair ──────────────────────────────────────────────────────────────────
+ec2_key_name:        "{{ project_name }}-key"
+ec2_ssh_public_key:  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINA5y99IQ6rNhG6DwmoLAoWwyIPLpHdKI4pg4EA4DZBa allanrafaelroque@gmail.com"
+
+# ── AMI — resolved dynamically at runtime ────────────────────────────────────
+ec2_rhel_owner:    "309956199498"   # Red Hat official AWS account
+ec2_rhel_version:  "RHEL-9*GA*"

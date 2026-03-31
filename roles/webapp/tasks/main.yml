@@ -1,0 +1,28 @@
+---
+- name: Install application dependencies
+  ansible.builtin.package:
+    name:  "{{ webapp_packages }}"
+    state: present
+
+- name: Deploy application from Git
+  ansible.builtin.git:
+    repo:    "{{ webapp_repo_url }}"
+    dest:    "{{ webapp_deploy_path }}"
+    version: "{{ webapp_repo_branch }}"
+    force:   true
+  notify: restart webapp
+
+- name: Render application config
+  ansible.builtin.template:
+    src:   "app.conf.j2"
+    dest:  "{{ webapp_config_path }}"
+    owner: "{{ webapp_user }}"
+    group: "{{ webapp_user }}"
+    mode:  "0644"
+  notify: restart webapp
+
+- name: Ensure webapp service is started and enabled
+  ansible.builtin.service:
+    name:    "{{ webapp_service }}"
+    state:   started
+    enabled: true

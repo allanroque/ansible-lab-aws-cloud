@@ -1,0 +1,82 @@
+---
+- name: Create security group
+  amazon.aws.ec2_security_group:
+    name:        "{{ sg_name }}"
+    description: "{{ sg_description }}"
+    vpc_id:      "{{ vpc_id }}"
+    region:      "{{ aws_region }}"
+    access_key:  "{{ aws_access_key }}"
+    secret_key:  "{{ aws_secret_key }}"
+    rules:
+      # ── Remote access ────────────────────────────────────────────────────
+      - proto: tcp
+        ports: [22]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "SSH"
+
+      # ── Web / Application ────────────────────────────────────────────────
+      - proto: tcp
+        ports: [80]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "HTTP"
+
+      - proto: tcp
+        ports: [443]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "HTTPS"
+
+      - proto: tcp
+        ports: [8080]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "HTTP-alt"
+
+      - proto: tcp
+        ports: [8443]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "HTTPS-alt"
+
+      # ── Database ─────────────────────────────────────────────────────────
+      - proto: tcp
+        ports: [3306]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "MySQL / MariaDB"
+
+      - proto: tcp
+        ports: [5432]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "PostgreSQL"
+
+      - proto: tcp
+        ports: [27017]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "MongoDB"
+
+      - proto: tcp
+        ports: [6379]
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "Redis"
+
+      # ── ICMP (ping) ───────────────────────────────────────────────────────
+      - proto: icmp
+        from_port: -1
+        to_port:   -1
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "ICMP ping"
+
+    rules_egress:
+      - proto: all
+        cidr_ip: "0.0.0.0/0"
+        rule_desc: "Allow all outbound"
+
+    tags: "{{ common_tags | combine({'Name': sg_name}) }}"
+  register: sg_result
+
+- name: Expose security group fact for downstream roles
+  ansible.builtin.set_fact:
+    sg_id: "{{ sg_result.group_id }}"
+
+- name: Show Security Group summary
+  ansible.builtin.debug:
+    msg:
+      - "Security Group : {{ sg_name }}"
+      - "SG ID          : {{ sg_id }}"

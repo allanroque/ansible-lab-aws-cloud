@@ -1,0 +1,11 @@
+---
+webapp_user:        ec2-user
+webapp_deploy_path: /opt/webapp
+webapp_config_path: /opt/webapp/config/app.conf
+webapp_service:     webapp
+webapp_repo_url:    "https://github.com/example/webapp.git"
+webapp_repo_branch: main
+webapp_packages:
+  - git
+  - python3
+  - python3-pip

@@ -1,0 +1,33 @@
+# Ansible
+*.retry
+.vault_pass
+*.log
+
+# AWS Credentials - NEVER commit these
+group_vars/all/aws_credentials.yml
+aws_credentials.yml
+credentials.yml
+*.pem
+*.key
+
+# MCP configuration
+mcp.json
+.mcp.json
+
+# SSH keys
+*.rsa
+id_*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp

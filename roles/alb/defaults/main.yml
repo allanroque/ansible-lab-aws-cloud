@@ -1,0 +1,3 @@
+---
+alb_name:       "{{ project_name }}-alb"
+alb_target_port: 8080

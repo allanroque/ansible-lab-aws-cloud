@@ -1,0 +1,30 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Playbook  : provisioning-aws-full.yml
+# Purpose   : Full stack provisioning — infra foundation + EC2 instances
+#
+# Executes in order:
+#   1. provisioning-aws-infra.yml → VPC, subnet, IGW, route table, SG, SSH key
+#   2. provisioning-aws-ec2.yml → RHEL instances (uses infra created above)
+#
+# AAP Survey variables (passed through to both plays):
+#   ec2_server_name    — base name  (e.g. "app" → app1, app2 …)
+#   ec2_instance_size  — t2.micro | t2.small | t2.medium
+#   ec2_quantity       — number of instances to launch
+#   ec2_server_role    — tag: Role
+#   ec2_server_group   — tag: Group
+#   aws_region         — AWS region (default: us-east-1)
+#
+# Run       : ansible-playbook playbooks/provisioning-aws-full.yml \
+#               -e ec2_server_name=app \
+#               -e ec2_instance_size=t2.small \
+#               -e ec2_quantity=2 \
+#               -e ec2_server_role=webserver \
+#               -e ec2_server_group=lab
+# ─────────────────────────────────────────────────────────────────────────────
+
+- name: "[1/2] Infra foundation — VPC, SG, SSH key"
+  ansible.builtin.import_playbook: provisioning-aws-infra.yml
+
+- name: "[2/2] Compute — RHEL EC2 instances"
+  ansible.builtin.import_playbook: provisioning-aws-ec2.yml

@@ -1,0 +1,31 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Playbook  : deploy-webapp.yml
+# Purpose   : Deploy application to running EC2 instances
+# Phase     : 3 — Application  (requires phase 2 EC2 instances running)
+# Run       : ansible-playbook playbooks/deploy-webapp.yml
+# ─────────────────────────────────────────────────────────────────────────────
+- name: Deploy web application
+  hosts: role_webserver
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - ../group_vars/all/vars.yml
+    - ../group_vars/all/aws_credentials.yml
+
+  roles:
+    - role: webapp
+      tags: [webapp, deploy]
+
+  post_tasks:
+    - name: Export deploy info to workflow (set_stats)
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          stats_webapp_deploy_path:  "{{ webapp_deploy_path }}"
+          stats_webapp_service:      "{{ webapp_service }}"
+          stats_webapp_repo_branch:  "{{ webapp_repo_branch }}"
+          stats_webapp_repo_url:     "{{ webapp_repo_url }}"
+          stats_deployed_hosts:      "{{ ansible_play_hosts }}"
+          stats_phase:               "app_deployed"
