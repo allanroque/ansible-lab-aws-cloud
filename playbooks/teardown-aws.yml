@@ -57,21 +57,6 @@
         state: absent
       tags: [ec2, teardown]
 
-    - name: Remove Application Load Balancer
-      amazon.aws.elb_application_lb:
-        name:       "{{ alb_name }}"
-        region:     "{{ aws_region }}"
-        state: absent
-        wait: true
-      tags: [alb, teardown]
-
-    - name: Remove target group
-      amazon.aws.elb_target_group:
-        name:       "{{ project_name }}-tg"
-        region:     "{{ aws_region }}"
-        state: absent
-      tags: [alb, teardown]
-
     - name: Remove security group
       amazon.aws.ec2_security_group:
         name:       "{{ sg_name }}"

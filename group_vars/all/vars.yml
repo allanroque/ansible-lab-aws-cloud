@@ -41,10 +41,6 @@ ec2_ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINA5y99IQ6rNhG6DwmoLAoW
 ec2_rhel_owner:     "309956199498"
 ec2_rhel_version:   "RHEL-9*GA*"
 
-# ─── ALB ─────────────────────────────────────────────────────────────────────
-alb_name:          "{{ project_name }}-alb"
-alb_target_port:   8080
-
 # ─── Common Tags ─────────────────────────────────────────────────────────────
 common_tags:
   Project:     "{{ project_name }}"
