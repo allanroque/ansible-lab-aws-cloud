@@ -37,7 +37,10 @@
     state:  present
   when: nginx_port != 80
 
-# ─── 5. Firewalld ─────────────────────────────────────────────────────────────
+# ─── 5. Firewalld (only when running — AWS SG handles external access) ────────
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
 
 - name: Allow Nginx port through firewalld
   ansible.posix.firewalld:
@@ -45,6 +48,8 @@
     permanent: true
     state:     enabled
     immediate: true
+  when: ansible_facts.services['firewalld.service'] is defined
+        and ansible_facts.services['firewalld.service']['state'] == 'running'
 
 # ─── 6. Service ───────────────────────────────────────────────────────────────
 
