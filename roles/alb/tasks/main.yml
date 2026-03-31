@@ -1,6 +1,6 @@
 ---
 - name: Create ALB target group
-  community.aws.elb_target_group:
+  amazon.aws.elb_target_group:
     name:        "{{ project_name }}-tg"
     protocol:    http
     port:        "{{ alb_target_port }}"

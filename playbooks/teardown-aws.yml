@@ -66,7 +66,7 @@
       tags: [alb, teardown]
 
     - name: Remove target group
-      community.aws.elb_target_group:
+      amazon.aws.elb_target_group:
         name:       "{{ project_name }}-tg"
         region:     "{{ aws_region }}"
         state: absent
