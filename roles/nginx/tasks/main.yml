@@ -37,7 +37,16 @@
     state:  present
   when: nginx_port != 80
 
-# ─── 5. Service ───────────────────────────────────────────────────────────────
+# ─── 5. Firewalld ─────────────────────────────────────────────────────────────
+
+- name: Allow Nginx port through firewalld
+  ansible.posix.firewalld:
+    port:      "{{ nginx_port }}/tcp"
+    permanent: true
+    state:     enabled
+    immediate: true
+
+# ─── 6. Service ───────────────────────────────────────────────────────────────
 
 - name: Ensure Nginx is started and enabled
   ansible.builtin.service:
@@ -49,6 +58,6 @@
   ansible.builtin.debug:
     msg:
       - "Nginx installed and configured"
-      - "Host : {{ ansible_hostname }}"
-      - "Port : {{ nginx_port }}"
-      - "URL  : http://{{ ansible_default_ipv4.address }}:{{ nginx_port }}"
+      - "Host       : {{ ansible_hostname }}"
+      - "Port       : {{ nginx_port }}"
+      - "Public URL : http://{{ ansible_host }}:{{ nginx_port }}"

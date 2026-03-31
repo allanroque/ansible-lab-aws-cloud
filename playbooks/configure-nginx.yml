@@ -26,6 +26,6 @@
         data:
           stats_nginx_hosts:    "{{ ansible_play_hosts }}"
           stats_nginx_port:     "{{ nginx_port }}"
-          stats_nginx_url:      "http://{{ ansible_default_ipv4.address }}:{{ nginx_port }}"
+          stats_nginx_url:      "http://{{ ansible_host }}:{{ nginx_port }}"
           stats_service_status: "running"
           stats_phase:          "nginx_ready"

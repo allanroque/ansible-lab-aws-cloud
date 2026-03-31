@@ -26,6 +26,6 @@
         data:
           stats_apache_hosts:   "{{ ansible_play_hosts }}"
           stats_apache_port:    "{{ apache_port }}"
-          stats_apache_url:     "http://{{ ansible_default_ipv4.address }}:{{ apache_port }}"
+          stats_apache_url:     "http://{{ ansible_host }}:{{ apache_port }}"
           stats_service_status: "running"
           stats_phase:          "apache_ready"

@@ -38,13 +38,22 @@
 
 - name: Allow Apache to listen on custom port (SELinux)
   community.general.seport:
-    ports:    "{{ apache_port }}"
-    proto:    tcp
-    setype:   http_port_t
-    state:    present
+    ports:  "{{ apache_port }}"
+    proto:  tcp
+    setype: http_port_t
+    state:  present
   when: apache_port != 80
 
-# ─── 5. Service ───────────────────────────────────────────────────────────────
+# ─── 5. Firewalld ─────────────────────────────────────────────────────────────
+
+- name: Allow Apache port through firewalld
+  ansible.posix.firewalld:
+    port:      "{{ apache_port }}/tcp"
+    permanent: true
+    state:     enabled
+    immediate: true
+
+# ─── 6. Service ───────────────────────────────────────────────────────────────
 
 - name: Ensure httpd is started and enabled
   ansible.builtin.service:
@@ -56,6 +65,6 @@
   ansible.builtin.debug:
     msg:
       - "Apache installed and configured"
-      - "Host : {{ ansible_hostname }}"
-      - "Port : {{ apache_port }}"
-      - "URL  : http://{{ ansible_default_ipv4.address }}:{{ apache_port }}"
+      - "Host       : {{ ansible_hostname }}"
+      - "Port       : {{ apache_port }}"
+      - "Public URL : http://{{ ansible_host }}:{{ apache_port }}"
