@@ -31,8 +31,6 @@
       amazon.aws.ec2_key:
         name:         "{{ ec2_key_name }}"
         region:       "{{ aws_region }}"
-        access_key:   "{{ aws_access_key }}"
-        secret_key:   "{{ aws_secret_key }}"
         key_material: "{{ ec2_ssh_public_key }}"
         state: present
         tags: "{{ common_tags | combine({'Name': ec2_key_name}) }}"
