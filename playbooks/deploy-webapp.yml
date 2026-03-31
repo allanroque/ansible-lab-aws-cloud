@@ -12,7 +12,6 @@
 
   vars_files:
     - ../group_vars/all/vars.yml
-    - ../group_vars/all/aws_credentials.yml
 
   roles:
     - role: webapp

@@ -27,7 +27,6 @@
 
   vars_files:
     - ../group_vars/all/vars.yml
-    - ../group_vars/all/aws_credentials.yml
 
   tasks:
     - name: Validate instance size input
@@ -43,8 +42,6 @@
     - name: Lookup VPC by name tag
       amazon.aws.ec2_vpc_net_info:
         region:     "{{ aws_region }}"
-        access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
         filters:
           "tag:Name": "{{ vpc_name }}"
       register: vpc_info
@@ -59,8 +56,6 @@
     - name: Lookup public subnet
       amazon.aws.ec2_vpc_subnet_info:
         region:     "{{ aws_region }}"
-        access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
         filters:
           "tag:Name": "{{ public_subnet_name }}"
       register: subnet_info
@@ -68,8 +63,6 @@
     - name: Lookup security group
       amazon.aws.ec2_security_group_info:
         region:     "{{ aws_region }}"
-        access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
         filters:
           group-name: "{{ sg_name }}"
       register: sg_info
@@ -99,7 +92,6 @@
 
   vars_files:
     - ../group_vars/all/vars.yml
-    - ../group_vars/all/aws_credentials.yml
 
   roles:
     - role: ec2
@@ -162,7 +154,6 @@
 
   vars_files:
     - ../group_vars/all/vars.yml
-    - ../group_vars/all/aws_credentials.yml
 
   tasks:
     - name: Export EC2 deployment info to workflow (set_stats)
