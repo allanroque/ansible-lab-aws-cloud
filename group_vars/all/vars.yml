@@ -4,7 +4,7 @@ project_name: ansible-aws-lab
 environment:  lab
 
 # ─── AWS Region ─────────────────────────────────────────────────────────────
-aws_region: us-east-1
+aws_region: us-east-2
 
 # ─── VPC ────────────────────────────────────────────────────────────────────
 vpc_name:  "{{ project_name }}-vpc"

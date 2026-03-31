@@ -13,7 +13,7 @@
 #   ec2_quantity       — number of instances to launch
 #   ec2_server_role    — tag: Role
 #   ec2_server_group   — tag: Group
-#   aws_region         — AWS region (default: us-east-1)
+#   aws_region         — AWS region (default: us-east-2)
 #
 # Run       : ansible-playbook playbooks/provisioning-aws-full.yml \
 #               -e ec2_server_name=app \

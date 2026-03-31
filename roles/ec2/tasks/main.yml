@@ -69,13 +69,40 @@
   loop_control:
     label: "{{ ec2_server_name }}{{ item.item }}"
 
-# ─── 5. Summary ───────────────────────────────────────────────────────────────
+# ─── 5. Validate SSH reachability ────────────────────────────────────────────
 
-- name: Provisioning Summary
+- name: "Wait for SSH port 22 — {{ item.name }} ({{ item.public_ip }})"
+  ansible.builtin.wait_for:
+    host:    "{{ item.public_ip }}"
+    port:    22
+    timeout: 180
+    state:   started
+  loop: "{{ ec2_deployed_hosts }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# ─── 6. Register instances for validation play ───────────────────────────────
+
+- name: Add instance to dynamic group ec2_newly_provisioned
+  ansible.builtin.add_host:
+    name:             "{{ item.public_ip }}"
+    groups:           ec2_newly_provisioned
+    ansible_user:     ec2-user
+    ec2_name:         "{{ item.name }}"
+    ec2_instance_id:  "{{ item.instance_id }}"
+    ec2_public_ip:    "{{ item.public_ip }}"
+    ec2_private_ip:   "{{ item.private_ip }}"
+  loop: "{{ ec2_deployed_hosts }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# ─── 7. Provisioning summary (AWS-level) ─────────────────────────────────────
+
+- name: AWS provisioning summary
   ansible.builtin.debug:
     msg:
       - "════════════════════════════════════════════════"
-      - " ansible-aws-lab — EC2 Provisioning Complete"
+      - " ansible-aws-lab — EC2 Provisioned"
       - "════════════════════════════════════════════════"
       - " Region   : {{ aws_region }}"
       - " AMI      : {{ ec2_ami_id }}"
@@ -88,5 +115,5 @@
          {{ h.name }} | {{ h.instance_id }} | public: {{ h.public_ip }} | private: {{ h.private_ip }} | {{ h.state }}\
          {% endfor %}"
       - "════════════════════════════════════════════════"
-      - " SSH: ssh -i <key> ec2-user@<public_ip>"
+      - " SSH validated — connecting for server details…"
       - "════════════════════════════════════════════════"

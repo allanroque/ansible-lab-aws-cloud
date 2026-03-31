@@ -10,7 +10,7 @@
 #   ec2_quantity       — number of instances to launch (integer ≥ 1)
 #   ec2_server_role    — tag: Role  (e.g. webserver, database, bastion)
 #   ec2_server_group   — tag: Group (e.g. prod, lab, staging)
-#   aws_region         — AWS region (default: us-east-1)
+#   aws_region         — AWS region (default: us-east-2)
 #
 # Run locally:
 #   ansible-playbook playbooks/provisioning-aws-ec2.yml \
@@ -105,12 +105,72 @@
     - role: ec2
       tags: [ec2, compute]
 
-  post_tasks:
+# ─── Validate access + collect server details ─────────────────────────────────
+- name: Validate SSH access and collect server information
+  hosts: ec2_newly_provisioned
+  gather_facts: true
+  become: false
+
+  tasks:
+    - name: Server detail report
+      ansible.builtin.debug:
+        msg:
+          - "╔══════════════════════════════════════════════════════════╗"
+          - "  SERVER : {{ ec2_name }}"
+          - "╠══════════════════════════════════════════════════════════╣"
+          - "  Instance ID   : {{ ec2_instance_id }}"
+          - "  Public IP     : {{ ec2_public_ip }}"
+          - "  Private IP    : {{ ec2_private_ip }}"
+          - "──────────────────────────────────────────────────────────"
+          - "  Hostname      : {{ ansible_hostname }}"
+          - "  FQDN          : {{ ansible_fqdn }}"
+          - "  OS            : {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "  Kernel        : {{ ansible_kernel }}"
+          - "  Architecture  : {{ ansible_architecture }}"
+          - "──────────────────────────────────────────────────────────"
+          - "  vCPUs         : {{ ansible_processor_vcpus }}"
+          - "  RAM Total     : {{ (ansible_memtotal_mb / 1024) | round(1) }} GB"
+          - "  RAM Free      : {{ (ansible_memfree_mb / 1024) | round(1) }} GB"
+          - "──────────────────────────────────────────────────────────"
+          - "  Root disk     : {{ ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | human_readable }}"
+          - "  Root disk use : {{ ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | human_readable }} available"
+          - "──────────────────────────────────────────────────────────"
+          - "  SSH user      : {{ ansible_user_id }}"
+          - "  Connection    : OK"
+          - "╚══════════════════════════════════════════════════════════╝"
+
+    - name: Aggregate server info for set_stats
+      ansible.builtin.set_fact:
+        server_detail:
+          name:         "{{ ec2_name }}"
+          instance_id:  "{{ ec2_instance_id }}"
+          public_ip:    "{{ ec2_public_ip }}"
+          private_ip:   "{{ ec2_private_ip }}"
+          hostname:     "{{ ansible_hostname }}"
+          fqdn:         "{{ ansible_fqdn }}"
+          os:           "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          kernel:       "{{ ansible_kernel }}"
+          vcpus:        "{{ ansible_processor_vcpus }}"
+          ram_gb:       "{{ (ansible_memtotal_mb / 1024) | round(1) }}"
+          ssh_user:     "{{ ansible_user_id }}"
+          ssh_status:   "ok"
+
+- name: Export deployment info to workflow
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - ../group_vars/all/vars.yml
+    - ../group_vars/all/aws_credentials.yml
+
+  tasks:
     - name: Export EC2 deployment info to workflow (set_stats)
       ansible.builtin.set_stats:
         aggregate: false
         data:
           stats_ec2_deployed_hosts: "{{ ec2_deployed_hosts }}"
+          stats_ec2_server_details: "{{ groups['ec2_newly_provisioned'] | map('extract', hostvars, 'server_detail') | list }}"
           stats_ec2_server_name:    "{{ ec2_server_name }}"
           stats_ec2_instance_size:  "{{ ec2_instance_size }}"
           stats_ec2_quantity:       "{{ ec2_quantity | int }}"
