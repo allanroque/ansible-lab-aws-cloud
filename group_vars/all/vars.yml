@@ -1,7 +1,7 @@
 ---
 # ─── Project ────────────────────────────────────────────────────────────────
 project_name: ansible-aws-lab
-environment:  lab
+deploy_env:   lab
 
 # ─── AWS Region ─────────────────────────────────────────────────────────────
 aws_region: us-east-2
@@ -48,5 +48,5 @@ alb_target_port:   8080
 # ─── Common Tags ─────────────────────────────────────────────────────────────
 common_tags:
   Project:     "{{ project_name }}"
-  Environment: "{{ environment }}"
+  Environment: "{{ deploy_env }}"
   ManagedBy:   ansible

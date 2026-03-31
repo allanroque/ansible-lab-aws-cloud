@@ -3,10 +3,8 @@
   amazon.aws.ec2_security_group:
     name:        "{{ sg_name }}"
     description: "{{ sg_description }}"
-    vpc_id:      "{{ vpc_id }}"
-    region:      "{{ aws_region }}"
-    access_key:  "{{ aws_access_key }}"
-    secret_key:  "{{ aws_secret_key }}"
+    vpc_id:  "{{ vpc_id }}"
+    region:  "{{ aws_region }}"
     rules:
       # ── Remote access ────────────────────────────────────────────────────
       - proto: tcp

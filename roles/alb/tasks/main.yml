@@ -4,10 +4,8 @@
     name:        "{{ project_name }}-tg"
     protocol:    http
     port:        "{{ alb_target_port }}"
-    vpc_id:      "{{ vpc_id }}"
-    region:      "{{ aws_region }}"
-    access_key:  "{{ aws_access_key }}"
-    secret_key:  "{{ aws_secret_key }}"
+    vpc_id:  "{{ vpc_id }}"
+    region:  "{{ aws_region }}"
     health_check_protocol:      http
     health_check_path:          /health
     health_check_interval:      30
@@ -21,8 +19,6 @@
   amazon.aws.elb_application_lb:
     name:            "{{ alb_name }}"
     region:          "{{ aws_region }}"
-    access_key:      "{{ aws_access_key }}"
-    secret_key:      "{{ aws_secret_key }}"
     security_groups: ["{{ sg_id }}"]
     subnets:
       - "{{ public_subnet_id }}"
