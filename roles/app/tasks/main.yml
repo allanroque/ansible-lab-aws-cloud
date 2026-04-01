@@ -3,9 +3,9 @@
 
 - name: Create application user
   ansible.builtin.user:
-    name:       "{{ app_user }}"
-    system:     true
-    shell:      /sbin/nologin
+    name:        "{{ app_user }}"
+    system:      true
+    shell:       /sbin/nologin
     create_home: false
 
 - name: Create application directory
@@ -16,34 +16,38 @@
     group: "{{ app_user }}"
     mode:  "0755"
 
-# ─── 2. Install dependencies ──────────────────────────────────────────────────
+# ─── 2. Install runtime dependencies ──────────────────────────────────────────
 
-- name: Install runtime dependencies
+- name: Install Python and pip
   ansible.builtin.dnf:
     name:
       - python3
       - python3-pip
-      - git
     state: present
 
-# ─── 3. Deploy application ────────────────────────────────────────────────────
+# ─── 3. Deploy application files ──────────────────────────────────────────────
 
-- name: Clone application repository
-  ansible.builtin.git:
-    repo:    "{{ app_repo_url }}"
-    dest:    "{{ app_deploy_dir }}"
-    version: "{{ app_repo_branch }}"
-    force:   true
-  become_user: "{{ app_user }}"
-  when: app_repo_url | length > 0
+- name: Deploy app.py
+  ansible.builtin.template:
+    src:   app.py.j2
+    dest:  "{{ app_deploy_dir }}/app.py"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode:  "0644"
   notify: restart app
 
-- name: Install Python requirements
+- name: Deploy requirements.txt
+  ansible.builtin.template:
+    src:   requirements.txt.j2
+    dest:  "{{ app_deploy_dir }}/requirements.txt"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode:  "0644"
+
+- name: Install Python dependencies
   ansible.builtin.pip:
     requirements: "{{ app_deploy_dir }}/requirements.txt"
     state:        present
-  when: app_repo_url | length > 0
-  ignore_errors: true
 
 # ─── 4. Systemd service ───────────────────────────────────────────────────────
 
@@ -66,13 +70,31 @@
     state:   started
     enabled: true
 
+# ─── 5. Firewall ──────────────────────────────────────────────────────────────
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Allow app port in firewalld
+  ansible.posix.firewalld:
+    port:      "{{ app_port }}/tcp"
+    permanent: true
+    state:     enabled
+    immediate: true
+  when:
+    - ansible_facts.services['firewalld.service'] is defined
+    - ansible_facts.services['firewalld.service']['state'] == 'running'
+
+# ─── 6. Summary ───────────────────────────────────────────────────────────────
+
 - name: Show application summary
   ansible.builtin.debug:
     msg:
       - "Application deployed"
-      - "Name   : {{ app_name }}"
-      - "Host   : {{ ansible_hostname }}"
-      - "Port   : {{ app_port }}"
-      - "Dir    : {{ app_deploy_dir }}"
-      - "Branch : {{ app_repo_branch }}"
-      - "URL    : http://{{ ansible_default_ipv4.address }}:{{ app_port }}"
+      - "Name    : {{ app_name }}"
+      - "Version : {{ app_version }}"
+      - "Host    : {{ ansible_hostname }}"
+      - "Port    : {{ app_port }}"
+      - "Dir     : {{ app_deploy_dir }}"
+      - "URL     : http://{{ ansible_host }}:{{ app_port }}"
+      - "Health  : http://{{ ansible_host }}:{{ app_port }}/health"

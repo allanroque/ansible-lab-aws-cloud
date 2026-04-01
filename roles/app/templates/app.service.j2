@@ -9,6 +9,7 @@ WorkingDirectory={{ app_deploy_dir }}
 ExecStart=/usr/bin/python3 -m flask run --host=0.0.0.0 --port={{ app_port }}
 Restart=on-failure
 RestartSec=5
+Environment=FLASK_APP={{ app_deploy_dir }}/app.py
 Environment=FLASK_ENV={{ app_env }}
 Environment=APP_PORT={{ app_port }}
 
