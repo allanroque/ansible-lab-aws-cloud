@@ -52,22 +52,32 @@
 
 - name: Create application database
   ansible.builtin.command:
-    cmd: psql -c "SELECT 1 FROM pg_database WHERE datname='{{ postgres_db_name }}'" | grep -q 1 || createdb {{ postgres_db_name }}
+    cmd: createdb {{ postgres_db_name }}
   become: true
   become_user: postgres
-  register: _db_check
-  changed_when: "'CREATE DATABASE' in _db_check.stdout"
+  register: _createdb
+  failed_when: _createdb.rc != 0 and 'already exists' not in _createdb.stderr
+  changed_when: _createdb.rc == 0
 
 - name: Create application user
   ansible.builtin.command:
-    cmd: >
-      psql -c "DO \$\$
-      BEGIN
-        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='{{ postgres_db_user }}') THEN
-          CREATE USER {{ postgres_db_user }} WITH PASSWORD '{{ postgres_db_password }}';
-          GRANT ALL PRIVILEGES ON DATABASE {{ postgres_db_name }} TO {{ postgres_db_user }};
-        END IF;
-      END \$\$;"
+    cmd: createuser --no-superuser --no-createdb --no-createrole {{ postgres_db_user }}
+  become: true
+  become_user: postgres
+  register: _createuser
+  failed_when: _createuser.rc != 0 and 'already exists' not in _createuser.stderr
+  changed_when: _createuser.rc == 0
+
+- name: Set user password
+  ansible.builtin.command:
+    cmd: psql -c "ALTER USER {{ postgres_db_user }} WITH PASSWORD '{{ postgres_db_password }}';"
+  become: true
+  become_user: postgres
+  changed_when: false
+
+- name: Grant privileges on database
+  ansible.builtin.command:
+    cmd: psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ postgres_db_name }} TO {{ postgres_db_user }};"
   become: true
   become_user: postgres
   changed_when: false
