@@ -5,11 +5,11 @@
 # Targets   : hosts in group 'webserver' (tag Role: webserver)
 #
 # AAP Survey variables:
-#   app_name        — service name and identifier  (default: myapp)
-#   app_repo_url    — Git repository URL           (required)
-#   app_repo_branch — branch to deploy             (default: main)
-#   app_port        — application port             (default: 8080)
-#   app_env         — environment label            (default: production)
+#   app_name  — service name and identifier  (default: myapp)
+#   app_port  — application port             (default: 8080)
+#   app_env   — environment label            (default: production)
+#
+# Application files vêm dos templates da role app (sem clone Git).
 # ─────────────────────────────────────────────────────────────────────────────
 - name: Configure application
   hosts: webserver
@@ -32,6 +32,6 @@
           stats_app_hosts:      "{{ ansible_play_hosts }}"
           stats_app_port:       "{{ app_port }}"
           stats_app_url:        "http://{{ ansible_default_ipv4.address }}:{{ app_port }}"
-          stats_app_branch:     "{{ app_repo_branch }}"
+          stats_app_version:    "{{ app_version }}"
           stats_service_status: "running"
           stats_phase:          "app_ready"
