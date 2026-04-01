@@ -16,7 +16,7 @@
   <div class="box">
     <p><span class="label">Hostname    : </span><span class="value">{{ ansible_hostname }}</span></p>
     <p><span class="label">FQDN        : </span><span class="value">{{ ansible_fqdn }}</span></p>
-    <p><span class="label">Public IP   : </span><span class="value">{{ ansible_default_ipv4.address }}</span></p>
+    <p><span class="label">Public IP   : </span><span class="value">{{ ansible_host }}</span></p>
     <p><span class="label">OS          : </span><span class="value">{{ ansible_distribution }} {{ ansible_distribution_version }}</span></p>
     <p><span class="label">Kernel      : </span><span class="value">{{ ansible_kernel }}</span></p>
     <p><span class="label">Port        : </span><span class="value">{{ apache_port }}</span></p>
