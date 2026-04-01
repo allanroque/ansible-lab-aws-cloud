@@ -6,7 +6,6 @@
     name:
       - postgresql-server
       - postgresql-contrib
-      - python3-psycopg2
     state: present
 
 # ─── 2. Initialize ────────────────────────────────────────────────────────────
@@ -52,19 +51,26 @@
 # ─── 5. Database and user ─────────────────────────────────────────────────────
 
 - name: Create application database
-  community.postgresql.postgresql_db:
-    name:  "{{ postgres_db_name }}"
-    state: present
+  ansible.builtin.command:
+    cmd: psql -c "SELECT 1 FROM pg_database WHERE datname='{{ postgres_db_name }}'" | grep -q 1 || createdb {{ postgres_db_name }}
+  become: true
   become_user: postgres
+  register: _db_check
+  changed_when: "'CREATE DATABASE' in _db_check.stdout"
 
 - name: Create application user
-  community.postgresql.postgresql_user:
-    name:     "{{ postgres_db_user }}"
-    password: "{{ postgres_db_password }}"
-    db:       "{{ postgres_db_name }}"
-    priv:     ALL
-    state:    present
+  ansible.builtin.command:
+    cmd: >
+      psql -c "DO \$\$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='{{ postgres_db_user }}') THEN
+          CREATE USER {{ postgres_db_user }} WITH PASSWORD '{{ postgres_db_password }}';
+          GRANT ALL PRIVILEGES ON DATABASE {{ postgres_db_name }} TO {{ postgres_db_user }};
+        END IF;
+      END \$\$;"
+  become: true
   become_user: postgres
+  changed_when: false
 
 - name: Show PostgreSQL summary
   ansible.builtin.debug:
