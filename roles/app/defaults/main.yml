@@ -1,8 +1,7 @@
 ---
-app_name:        myapp
-app_user:        appuser
-app_port:        8080
-app_deploy_dir:  /opt/app
-app_repo_url:    ""
-app_repo_branch: main
-app_env:         production
+app_name:       myapp
+app_user:       appuser
+app_port:       8080
+app_deploy_dir: /opt/app
+app_env:        production
+app_version:    "1.0.0"
